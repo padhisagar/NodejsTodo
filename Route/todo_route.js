@@ -14,7 +14,8 @@ router.post('/register',async (req,res,next)=>{
         //     status:400,
         //     message:'Page Not found'
         // })
-        next(error);
+        //next(error);
+        res.status(500).send({msg:error});
     }
 });
 
@@ -23,7 +24,8 @@ router.post('/loginuser', async (req,res,next)=>{
         const logindata = await da.login(req,res,next);
         res.status(201).send(logindata);    
     } catch (error) {
-        next(error)
+        // next(error)
+        res.status(500).send({msg:error});
     }
 })
 
@@ -32,7 +34,8 @@ router.post('/addtasklist', async (req,res,next) => {
         const todo = await da.addtodo(req,res,next);
         res.status(201).send(todo);
     } catch (error) {
-        next(error);
+        // next(error);
+        res.status(500).send({msg:error});
     }
 })
 
@@ -42,7 +45,8 @@ router.patch('/updateuser/:id',async (req,res,next) => {
         const updatu = await da.updateuser(req,res,next,id);
         res.status(201).send(updatu);    
     } catch (error) {
-        next(error);
+        // next(error);
+        res.status(500).send({msg:error});
     }
 })
 
@@ -51,7 +55,8 @@ router.get('/userdetail', async (req,res,next)=>{
         const usdata = await da.userde(req,res,next);
         res.status(201).send(usdata);
     } catch (error) {
-        next(error);
+        // next(error);
+        res.status(500).send({msg:error});
     }
 })
 
@@ -61,7 +66,8 @@ router.delete('/deletetasklist/:email', async (req,res,next) =>{
         const deldata = await da.deletetask(req,res,next,emailus);
         res.status(201).send(deldata);
     } catch (error) {
-        next(error)
+        // next(error)
+        res.status(500).send({msg:error});
     }
 })
 
