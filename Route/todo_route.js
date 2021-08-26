@@ -1,6 +1,7 @@
 const express = require('express');
 const createerror = require('http-errors');
 const router = express.Router();
+const bcrypt = require('bcrypt');
 const da = require('../controller/todo_manager');
 console.log(da);
 router.use(express.json());
@@ -21,7 +22,7 @@ router.post('/register',async (req,res,next)=>{
 
 router.post('/loginuser', async (req,res,next)=>{
     try {
-        const logindata = await da.login(req,res,next);
+        const logindata = await da.login(req,res);
         res.status(201).send(logindata);    
     } catch (error) {
         // next(error)

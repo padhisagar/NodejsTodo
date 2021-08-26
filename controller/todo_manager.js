@@ -3,7 +3,7 @@ const UserRecord = require('../model/userdetail');
 const TodoTask = require('../model/todo');
 const createerror = require('http-errors');
 const joi = require('joi');
-const bcryptjs = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const authroute = joi.object({
@@ -46,23 +46,20 @@ const authroute = joi.object({
 // };
 const create = async (req, res, next) => {
     try {
-        const userdetail = await UserRecord({
+        const userdetail =new UserRecord({
             Name: req.body.firstname,
             Email: req.body.email,
             Phone_no: req.body.phone,
             Password: req.body.password
         })
         const vali = await authroute.validateAsync(req.body);
-        // console.log(vali);
         if (vali.error != null) {
             next(createerror(400, "data are not validated"))
         }
         else {
-            const token = await userdetail.generateAuthToken();
-            res.cookie("jwt", token, {
-                expires: new Date(Date.now() + 3000),
-                httpOnly: true
-            });
+            const salt = bcrypt.genSaltSync(10);
+            userdetail.Password =  bcrypt.hashSync(req.body.password,salt);
+            console.log(userdetail.password);
             const createuser = await userdetail.save();
             return createuser;
         }
@@ -70,27 +67,22 @@ const create = async (req, res, next) => {
         return error;
     }
 };
-
-const login = async (req, res, next) => {
+const login = async (req,res) => {
     try {
         const a = req.body.email;
-        const b = req.body.password;
         const data = await UserRecord.findOne({ Email: a });
-        const ismatch = await bcryptjs.compare(b, data.Password);
-        const token =  await data.generateAuthToken();
-        res.cookie("jwt",token,{
-            expires: new Date(Date.now() + 3000),
-            httpOnly:true
-        });
-        if (ismatch) {
+        const result = bcrypt.compareSync(req.body.password, data.Password);
+        if(result){
+            const token = await data.generateAuthToken();
+            res.cookie("jwt", token, {
+                expires: new Date(Date.now() + 3000),
+                httpOnly: true
+            });
             return data;
         }
-        else {
-            return {
-                Error: "Email id or password not match"
-            }
+        else{
+            return error;
         }
-
     } catch (error) {
         return error;
     }
@@ -131,10 +123,10 @@ const updateuser = async (req, res, next, id) => {
     }
 }
 
-const deletetask = async (req,res,next,emailus) => {
+const deletetask = async (req, res, next, emailus) => {
     try {
         console.log(emailus);
-        const deltask = await TodoTask.deleteOne({email:emailus});
+        const deltask = await TodoTask.deleteOne({ email: emailus });
         return deltask;
     } catch (error) {
         return error;

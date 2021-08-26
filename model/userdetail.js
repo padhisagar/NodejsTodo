@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const userDetail = new mongoose.Schema({
@@ -23,7 +23,7 @@ const userDetail = new mongoose.Schema({
     tokens:[{
         token:{
             type:String,
-            required:true
+            required:false
         }
     }]    
 })
@@ -41,10 +41,11 @@ userDetail.methods.generateAuthToken = async function(){
 }
 
 
-userDetail.pre("save", async function(next){
-    this.Password = await bcrypt.hash(this.Password,10);
-    next();
-})
+// userDetail.pre("save", async function(next){
+//     this.Password = await bcrypt.hash(this.Password,12);
+//     console.log("From model file " + this.Password);
+//     next();
+// })
 
 const UserRecord = new mongoose.model("UserRecord",userDetail);
 module.exports = UserRecord;
