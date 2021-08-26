@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-mongoose.connect("mongodb://localhost:27017/TodoList",{
+mongoose.connect(process.env.MONGO_Db,{
     useNewUrlParser:true,
     useUnifiedTopology:true,
     useCreateIndex:true,

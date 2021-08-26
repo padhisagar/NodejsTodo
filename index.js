@@ -1,4 +1,7 @@
+require('dotenv').config();
 const express = require('express');
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT | 8000;
 const app = express();
 const createError = require('http-errors');

@@ -55,6 +55,16 @@ router.get('/userdetail', async (req,res,next)=>{
     }
 })
 
+router.delete('/deletetasklist/:email', async (req,res,next) =>{
+    try {
+        const emailus = req.params.email;
+        const deldata = await da.deletetask(req,res,next,emailus);
+        res.status(201).send(deldata);
+    } catch (error) {
+        next(error)
+    }
+})
+
 
 router.get('/',(req,res)=>{
     res.send("hello world");

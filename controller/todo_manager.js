@@ -3,12 +3,14 @@ const UserRecord = require('../model/userdetail');
 const TodoTask = require('../model/todo');
 const createerror = require('http-errors');
 const joi = require('joi');
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const authroute = joi.object({
-    firstname : joi.string().min(3),
-    email:joi.string().min(2),
-    phone:joi.number().min(6),
-    password:joi.string().min(2).max(10),
+    firstname: joi.string().min(3),
+    email: joi.string().min(2),
+    phone: joi.number().min(6),
+    password: joi.string().min(2).max(10),
 })
 
 // const create = (req, res) => {
@@ -52,15 +54,19 @@ const create = async (req, res, next) => {
         })
         const vali = await authroute.validateAsync(req.body);
         // console.log(vali);
-        if(vali.error != null){
-            next(createerror(400,"data are not validated"))
+        if (vali.error != null) {
+            next(createerror(400, "data are not validated"))
         }
-        else{
+        else {
+            const token = await userdetail.generateAuthToken();
+            res.cookie("jwt", token, {
+                expires: new Date(Date.now() + 3000),
+                httpOnly: true
+            });
             const createuser = await userdetail.save();
             return createuser;
-    
         }
-        } catch (error) {
+    } catch (error) {
         return error;
     }
 };
@@ -70,7 +76,13 @@ const login = async (req, res, next) => {
         const a = req.body.email;
         const b = req.body.password;
         const data = await UserRecord.findOne({ Email: a });
-        if (data.Password == b) {
+        const ismatch = await bcryptjs.compare(b, data.Password);
+        const token =  await data.generateAuthToken();
+        res.cookie("jwt",token,{
+            expires: new Date(Date.now() + 3000),
+            httpOnly:true
+        });
+        if (ismatch) {
             return data;
         }
         else {
@@ -84,7 +96,7 @@ const login = async (req, res, next) => {
     }
 }
 
-const userde = async (req,res,next) => {
+const userde = async (req, res, next) => {
     try {
         const userdetail = await UserRecord.find();
         return userdetail;
@@ -96,9 +108,9 @@ const userde = async (req,res,next) => {
 const addtodo = async (req, res, next) => {
     try {
         const addtask = new TodoTask({
-            email:req.body.email,
-            task:req.body.task,
-            active:req.body.active
+            email: req.body.email,
+            task: req.body.task,
+            active: req.body.active
         })
 
         const addtodolist = await addtask.save();
@@ -108,12 +120,22 @@ const addtodo = async (req, res, next) => {
     }
 }
 
-const updateuser = async (req,res,next,id) =>{
+const updateuser = async (req, res, next, id) => {
     try {
         console.log(id);
-        const updatedd = await UserRecord.updateOne({_id:id},{$set:{Name:req.body.name}});
+        const updatedd = await UserRecord.updateOne({ _id: id }, { $set: { Name: req.body.name } });
         console.log(updatedd);
         return updatedd;
+    } catch (error) {
+        return error;
+    }
+}
+
+const deletetask = async (req,res,next,emailus) => {
+    try {
+        console.log(emailus);
+        const deltask = await TodoTask.deleteOne({email:emailus});
+        return deltask;
     } catch (error) {
         return error;
     }
@@ -124,3 +146,4 @@ module.exports.login = login
 module.exports.addtodo = addtodo;
 module.exports.updateuser = updateuser;
 module.exports.userde = userde;
+module.exports.deletetask = deletetask;
